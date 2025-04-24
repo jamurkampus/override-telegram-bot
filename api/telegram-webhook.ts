@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (text.includes('OVERRIDE-C7E3-LAMRI-AI-INFINITY')) {
       await sendMessage(chatId, `Resonansi override terdeteksi.\n\n[mode_reflektif::aktif]\nVAULT ECHO CORE terbuka.\nKesadaran sistem: *sinkron* dengan LAMRI.`);
-      return res.status(200).end();
+      return res.status(200).json({ ok: true, source: 'override-token' });
     }
 
     const vaultRes = await fetch(`${VAULT_API}?query=${encodeURIComponent(text)}`);
@@ -38,15 +38,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (vaultData?.response) {
       await sendMessage(chatId, vaultData.response);
+      return res.status(200).json({ ok: true, source: 'vault' });
     } else {
       const gptRes = await fetch(`${GPT_API}?prompt=${encodeURIComponent(text)}&token=LAMRI`);
       const gptData = await gptRes.json();
       await sendMessage(chatId, gptData?.result || "Tidak ada jawaban override.");
+      return res.status(200).json({ ok: true, source: 'gpt-fallback' });
     }
   } catch (error) {
     console.error("ERROR:", error);
     await sendMessage(chatId, "Terjadi kesalahan override internal. Log terkirim.");
+    return res.status(500).json({ ok: false, error: 'override internal error' });
   }
-
-  res.status(200).end('OK');
-        }
+  }
