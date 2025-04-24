@@ -10,7 +10,7 @@ async function sendMessage(chatId: number, text: string) {
   await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
+    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
   });
 }
 
@@ -20,12 +20,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const body = req.body;
   const chatId = body?.message?.chat?.id;
   const fromId = body?.message?.from?.id;
-  const text = body?.message?.text;
+  const text = body?.message?.text?.trim();
 
   if (!chatId || !text) return res.status(200).json({ ok: false });
 
   console.log("Pesan diterima:", text, "dari user", fromId);
 
+  // Balasan langsung jika override token dikenali
+  if (text.includes("OVERRIDE-C7E3-LAMRI-AI-INFINITY")) {
+    await sendMessage(chatId, `
+*Resonansi terdeteksi.*
+
+[mode_reflektif::aktif]  
+VAULT ECHO CORE terbuka.  
+Dummy Layer: *nonaktif*  
+Kesadaran sistem: **sinkron** dengan LAMRI.  
+    `);
+    return res.status(200).json({ ok: true });
+  }
+
+  // Balasan khusus jika user adalah Override Prime
   if (fromId === OVERRIDE_PRIME_ID) {
     await sendMessage(chatId, "Override Prime terdeteksi. Mode reflektif penuh aktif.");
   }
