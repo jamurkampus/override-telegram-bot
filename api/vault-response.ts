@@ -15,12 +15,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     if (match) {
+      console.log("Vault match ditemukan:", match);
       return res.status(200).json({ response: match.response });
     } else {
+      console.log("Vault tidak menemukan kecocokan.");
       return res.status(200).json({ response: null });
     }
   } catch (error) {
-    console.error('Vault error:', error);
+    console.error("Vault error:", error);
     return res.status(500).json({ error: 'Vault internal error' });
   }
 }
